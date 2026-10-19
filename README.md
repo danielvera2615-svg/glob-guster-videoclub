@@ -69,6 +69,11 @@ glob-gusters-videoclub/
 │           ├── 04_VDL.sql               # CREATE VIEW / consulta / DROP VIEW de ejemplo
 │           ├── 05_DCL.sql               # CREATE USER / GRANT / REVOKE de ejemplo
 │           └── 06_TCL.sql               # START TRANSACTION / SAVEPOINT / COMMIT / ROLLBACK
+├── py/
+│   ├── conexion.py                      # Conexión a MariaDB (PyMySQL) y funciones comunes
+│   ├── ddl.py / dml.py / dql.py         # Equivalentes en Python de 01_DDL, 02_DML y 03_DQL
+│   ├── vdl.py / dcl.py / tcl.py         # Equivalentes en Python de 04_VDL, 05_DCL y 06_TCL
+│   └── requirements.txt                 # Dependencias de Python (PyMySQL)
 ├── tests/
 │   └── mariadb/
 │       └── glob_gusters_test.sql        # Pruebas de integridad integral del proyecto
@@ -294,6 +299,39 @@ con el total de pruebas aprobadas. El script no requiere procedimientos almacena
 por lo que funciona incluso en instalaciones de XAMPP con la tabla de sistema
 `mysql.proc` desactualizada (un problema común al reemplazar el `mysqld` incluido por
 una versión más reciente sin ejecutar `mysql_upgrade`).
+
+## Conexión y consultas desde Python
+
+La carpeta `py/` conecta la base `glob_gusters` a Python y reproduce, con los mismos
+datos de ejemplo, cada grupo de comandos SQL de `sql/mariadb/commands/`. La conexión
+equivale a `mysql -u root -p -h localhost -P 3306 -D glob_gusters`.
+
+**Requisitos:** Python 3.9+ y el servidor MariaDB de XAMPP en ejecución, con la base ya
+creada (pasos 1 a 3 de la sección anterior).
+
+```bash
+pip install -r py/requirements.txt
+python py/conexion.py      # prueba de conexión: versión, base y cuenta
+```
+
+Los valores por defecto son los de XAMPP (`localhost`, `3306`, `root` sin contraseña,
+base `glob_gusters`). Se pueden cambiar sin editar el código con las variables de entorno
+`GLOB_GUSTERS_HOST`, `GLOB_GUSTERS_PORT`, `GLOB_GUSTERS_USER`, `GLOB_GUSTERS_PASSWORD` y
+`GLOB_GUSTERS_DB`. `dcl.py` también acepta `GLOB_GUSTERS_PASS_REPORTES` y
+`GLOB_GUSTERS_PASS_MOSTRADOR` para las contraseñas de las cuentas de ejemplo.
+
+| Script | Equivale a | Qué hace |
+|---|---|---|
+| `py/ddl.py` | `01_DDL.sql` | CREATE / ALTER / CREATE INDEX / DROP con `IF [NOT] EXISTS`. |
+| `py/dml.py` | `02_DML.sql` | INSERT / UPDATE / DELETE con parámetros y llaves naturales. |
+| `py/dql.py` | `03_DQL.sql` | SELECT, JOIN y GROUP BY; `python py/dql.py <nombre>` ejecuta una sola consulta. |
+| `py/vdl.py` | `04_VDL.sql` | Crea y consulta las dos vistas; `--drop` las elimina. |
+| `py/dcl.py` | `05_DCL.sql` | CREATE USER / GRANT / REVOKE / SHOW GRANTS (requiere cuenta administrativa). |
+| `py/tcl.py` | `06_TCL.sql` | Transacción con SAVEPOINT y COMMIT, y otra descartada con ROLLBACK. |
+
+Se ejecutan en el mismo orden que los scripts SQL (`ddl` → `dml` → `dql` → `vdl` →
+`dcl` → `tcl`) y, como ellos, se pueden repetir sin errores ni datos duplicados. Las
+sentencias usan parámetros (`%s`) y nunca concatenan valores dentro del SQL.
 
 ## Cómo subir este proyecto a GitHub
 

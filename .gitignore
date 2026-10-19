@@ -18,6 +18,10 @@
 *.mwb.bak
 *.mwbhistory/
 
+# Python
+__pycache__/
+*.pyc
+
 # Sistema operativo
 Thumbs.db
 .DS_Store
